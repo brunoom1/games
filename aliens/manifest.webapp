@@ -1,0 +1,13 @@
+{
+  "name": "Aliens invade",
+  "description": "Not allow aliens to invade your planet!",
+  "launch_path": "/",
+  "icons": {
+    "128": "/icon-128.png"
+  },
+  "developer": {
+    "name": "Marco Scarpetta",
+    "url": "http://marcoscarpetta.github.io/"
+  },
+  "default_locale": "en"
+}
