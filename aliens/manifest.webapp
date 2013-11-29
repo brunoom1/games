@@ -1,9 +1,9 @@
 {
   "name": "Aliens invade",
   "description": "Not allow aliens to invade your planet!",
-  "launch_path": "/",
+  "launch_path": "/games/aliens",
   "icons": {
-    "128": "/icon-128.png"
+    "128": "/games/aliens/data/icon-128.png"
   },
   "developer": {
     "name": "Marco Scarpetta",
