@@ -394,8 +394,8 @@ function GameOverState() {
 
 jaws.onload = function() {
   var canvas = document.createElement('canvas');
-  canvas.width = screen.width;
-  canvas.height = screen.height;
+  canvas.width = Math.max(screen.width, screen.height);
+  canvas.height = Math.min(screen.width, screen.height);
   canvas.style = "margin: 0px 0px; padding: 0px 0px;";
   document.body.appendChild(canvas);
   jaws.assets.setRoot("data/");
