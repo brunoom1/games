@@ -3,8 +3,12 @@
   "description": "Not allow aliens to invade your planet!",
   "launch_path": "/games/aliens",
   "icons": {
-    "128": "/games/aliens/data/icon-128.png"
+    "30": "data/icon-30.png",
+    "60": "data/icon-60.png",
+    "128": "data/icon-128.png"
   },
+  "orientation": ["landscape"],
+  "fullscreen": "true",
   "developer": {
     "name": "Marco Scarpetta",
     "url": "http://marcoscarpetta.github.io/"
