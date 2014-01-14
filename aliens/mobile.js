@@ -185,13 +185,13 @@ function myGameState() {
     this.setup = function() {
       jaws.canvas.addEventListener("touchstart",
 	function(event) {
-	  direction = (event.touches[0].pageY<jaws.height/2) ? 0 : 1;
+	  direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
 	  event.preventDefault();
 	},
 	false);
       jaws.canvas.addEventListener("touchmove",
 	function(event) {
-	  direction = (event.touches[0].pageY<jaws.height/2) ? 0 : 1;
+	  direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
 	  event.preventDefault();
 	},
 	false);
@@ -337,7 +337,7 @@ function myGameState() {
       if (paused) {
 	jaws.context.font = "bold 20pt terminal";
 	jaws.context.lineWidth = 10;
-	jaws.context.fillStyle =  "Black";
+	jaws.context.fillStyle = "Black";
 	jaws.context.strokeStyle =  "rgba(200,200,200,0.0)";
 	jaws.context.fillText("Paused", jaws.width/2, jaws.height/2);
       }
@@ -356,7 +356,7 @@ function MenuState() {
     jaws.canvas.addEventListener("touchstart", onTouchStart, false);
   }
   
-  this.update = function(){
+  this.update = function() {
     if (x+delta>100) {delta=-1}
     if (x+delta<0) {delta=1}
     x += delta;
@@ -398,7 +398,7 @@ function GameOverState() {
     jaws.canvas.addEventListener("touchstart", onTouchStart, false);
   }
   
-  this.update = function(){
+  this.update = function() {
     if(x+delta>100) {delta=-1}
     if(x+delta<0) {delta=1}
     x += delta;
@@ -424,7 +424,7 @@ function GameOverState() {
       jaws.context.fillText("Record: "+localStorage.getItem("record"), 30, 
 			    jaws.height/2-30);
     }
-    jaws.context.fillStyle =  "rgb("+x+","+x+","+x+")";
+    jaws.context.fillStyle = "rgb("+x+","+x+","+x+")";
     jaws.context.fillText("Tap to restart", 30, jaws.height/2);
   }
 }
