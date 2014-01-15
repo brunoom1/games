@@ -9,7 +9,13 @@
 <script>
 var script = document.createElement('script');
 script.type = 'text/javascript'
-script.src = navigator.userAgent.contains('Mobile') ? 'mobile.js' : 'game.js';
+if (navigator.userAgent.contains('Mobile')) {
+  script.src = 'mobile.js';
+}
+else {
+  script.src = 'game.js';
+  document.body.style.backgroundImage = 'url(data/back.png)';
+}
 document.body.appendChild(script);
 </script>
 </body>
