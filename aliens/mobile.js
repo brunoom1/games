@@ -73,275 +73,269 @@ function myGameState() {
     obj.update = function() {this.x+=this.xspeed;this.y+=this.yspeed;};
     return obj
   }
-    
-    var life = function (ship) {ship.lifes += 1}
-    var care = function (ship) {ship.health = 5}
-    var due = function (ship){if (ship.bullets<3){ship.bullets+=1}}
-    var tre = function (ship){ship.side_bullets = 1}
-    var shield = function (ship) {
-      ship.shield = 1;
-      setTimeout(function(ship) {ship.shield=0}, 10000, ship);
+  
+  var life = function (ship) {ship.lifes += 1}
+  var care = function (ship) {ship.health = 5}
+  var due = function (ship){if (ship.bullets<3){ship.bullets+=1}}
+  var tre = function (ship){ship.side_bullets = 1}
+  var shield = function (ship) {
+    ship.shield = 1;
+    setTimeout(function(ship) {ship.shield=0}, 10000, ship);
+  }
+  var gifts_list = [
+  ['care.png', care],
+  ['life.png', life],
+  ['due.png', due],
+  ['tre.png', tre],
+  ['shield.png', shield],
+  ];
+  
+  var create_gift = function() {
+    setTimeout(create_gift,10000+Math.round(Math.random()*20000));
+    var py = 0;
+    do {py=Math.round(Math.random()*jaws.height)}
+    while (py<0||py>jaws.height-30);
+    var i = Math.floor(Math.random()*gifts_list.length)
+    var gift = new_static(gifts_list[i][0],jaws.width,py,-7,0);
+    gift.taken = gifts_list[i][1]
+    gift.exp_anim = exp_anim.slice(0,6)
+    gifts.push(gift);
+  }
+  
+  var total_enemies = 0
+  function next_enemy(type){
+    switch(type){
+      case 0: return Math.round(Math.random()*100*total_enemies); break;
+      case 1: return Math.round(Math.random()*65*total_enemies); break;
+      case 2: return Math.round(500+Math.random()*(100000*(1/total_enemies)));
+      break;
     }
-    var gifts_list = [
-    ['care.png', care],
-    ['life.png', life],
-    ['due.png', due],
-    ['tre.png', tre],
-    ['shield.png', shield],
-    ];
-    
-    var create_gift = function() {
-      setTimeout(create_gift,10000+Math.round(Math.random()*20000));
+  }
+  
+  var enemies_types = [
+  ['',1],
+  ['1',5],
+  ['2',10]
+  ]
+  var create_enemy = function(type) {
+    total_enemies += 1;
+    setTimeout(create_enemy, next_enemy(type), type);
+    if (!paused){
+      var py = 0;
+      do {py=Math.round(Math.random()*jaws.height)}
+      while (py<0||py>jaws.height-30-(type==2)*20);
+      var enemy = new_static("enemy"+enemies_types[type][0]+'.png',
+			     jaws.width, py, -2, 0);
+      enemy.health = enemies_types[type][1];
+      enemy.exp_anim = exp_anim.slice(0, 6);
+      enemies.push(enemy);
+    }
+  }
+  
+  
+  function create_bullet(ship) {
+    switch (ship.bullets) {
+      case 1: var d_y=[0]; break;
+      case 2: var d_y=[-5,5]; break;
+      case 3: var d_y=[-10,0,10]; break;
+    }
+    for (var i=0;i<d_y.length;i++) {
+      var bullet = new_static("bullet.png", ship.x+ship.width, 
+			      ship.y+ship.height/2+d_y[i], 15, 0);
+      bullets.push(bullet);
+    }
+    if (ship.side_bullets) {
+      var ys=[-5,5];
+      for (var i=0;i<ys.length;i++) {
+	var bullet = new_static("bullet.png", ship.x+ship.width,
+				ship.y+ship.height/2, 15, ys[i]);
+	bullets.push(bullet);
+      }
+    }
+  }
+  
+  var player;
+  var paused = false;
+  
+  var create_missile = function() {
+    setTimeout(create_missile,Math.round(Math.random()*3000));
+    if (!paused) {
       var py = 0;
       do {py=Math.round(Math.random()*jaws.height)}
       while (py<0||py>jaws.height-30);
-      var i = Math.floor(Math.random()*gifts_list.length)
-      var gift = new_static(gifts_list[i][0],jaws.width,py,-7,0);
-      gift.taken = gifts_list[i][1]
-      gift.exp_anim = exp_anim.slice(0,6)
-      gifts.push(gift);
+      var enemy = new_static("bomb.png", jaws.width, player.y, -15, 0);
+      missiles.push(enemy);
     }
-    
-    var total_enemies = 0
-    function next_enemy(type){
-      switch(type){
-	case 0: return Math.round(Math.random()*100*total_enemies); break;
-	case 1: return Math.round(Math.random()*65*total_enemies); break;
-	case 2: return Math.round(500+Math.random()*(100000*(1/total_enemies)));
-	break;
+  }
+  
+  this.hit = function() {
+    player.health -= 1;
+    if (player.health<1) {
+      if (player.lifes>0) {
+	player.lifes -= 1;
+	player.init();
       }
-    }
-    
-    var enemies_types = [
-    ['',1],
-    ['1',5],
-    ['2',10]
-    ]
-    var create_enemy = function(type) {
-      total_enemies += 1;
-      setTimeout(create_enemy, next_enemy(type), type);
-      if (!paused){
-	var py = 0;
-	do {py=Math.round(Math.random()*jaws.height)}
-	while (py<0||py>jaws.height-30-(type==2)*20);
-	var enemy = new_static("enemy"+enemies_types[type][0]+'.png',
-			       jaws.width, py, -2, 0);
-	enemy.health = enemies_types[type][1];
-	enemy.exp_anim = exp_anim.slice(0, 6);
-	enemies.push(enemy);
+      else {
+	last_points = player.points;
+	jaws.switchGameState(GameOverState);
       }
     }
-    
-    
-    function create_bullet(ship) {
-      switch (ship.bullets) {
-	case 1: var d_y=[0]; break;
-	case 2: var d_y=[-5,5]; break;
-	case 3: var d_y=[-10,0,10]; break;
-      }
-      for (var i=0;i<d_y.length;i++) {
-	var bullet = new_static("bullet.png", ship.x+ship.width, 
-				ship.y+ship.height/2+d_y[i], 15, 0);
-	bullets.push(bullet);
-      }
-      if (ship.side_bullets) {
-	var ys=[-5,5];
-	for (var i=0;i<ys.length;i++) {
-	  var bullet = new_static("bullet.png", ship.x+ship.width,
-				  ship.y+ship.height/2, 15, ys[i]);
-	  bullets.push(bullet);
+  }
+  
+  this.setup = function() {
+    var onTouch = function(event) {
+      direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
+      event.preventDefault();
+    }
+    jaws.canvas.addEventListener("touchstart", onTouch, false);
+    jaws.canvas.addEventListener("touchmove", onTouch, false);
+    jaws.canvas.addEventListener("touchend",
+				 function(event) {
+				   direction = null;
+				   event.preventDefault();
+				 },
+				 false);
+    player = new_ship();
+    setTimeout(create_enemy, 100, 0);
+    setTimeout(create_enemy, 50000, 1);
+    setTimeout(create_enemy, 120000, 2);
+    create_missile(player);
+    setTimeout(create_gift,5000);
+  }
+  
+  this.update = function() {
+    if (!paused) {
+      player.setImage(player.anim_default.next());
+      if(direction === 0) {
+	if (player.y+player.speed<jaws.height-player.height) {
+	  player.y += player.speed;
 	}
       }
-    }
-    
-    var player;
-    var paused = false;
-    
-    var create_missile = function() {
-      setTimeout(create_missile,Math.round(Math.random()*3000));
-      if (!paused) {
-	var py = 0;
-	do {py=Math.round(Math.random()*jaws.height)}
-	while (py<0||py>jaws.height-30);
-	var enemy = new_static("bomb.png", jaws.width, player.y, -15, 0);
-	missiles.push(enemy);
-      }
-    }
-    
-    this.hit = function() {
-      player.health -= 1;
-      if (player.health<1) {
-	if (player.lifes>0) {
-	  player.lifes -= 1;
-	  player.init();
-	}
-	else {
-	  last_points = player.points;
-	  jaws.switchGameState(GameOverState);
+      if(direction === 1) {
+	if (player.y-player.speed>0) {
+	  player.y -= player.speed;
 	}
       }
-    }
-    
-    this.setup = function() {
-      jaws.canvas.addEventListener("touchstart",
-	function(event) {
-	  direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
-	  event.preventDefault();
-	},
-	false);
-      jaws.canvas.addEventListener("touchmove",
-	function(event) {
-	  direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
-	  event.preventDefault();
-	},
-	false);
-      jaws.canvas.addEventListener("touchend",
-	function(event) {
-	  direction = null;
-	  event.preventDefault();
-	},
-	false);
-      player = new_ship();
-      setTimeout(create_enemy, 100, 0);
-      setTimeout(create_enemy, 50000, 1);
-      setTimeout(create_enemy, 120000, 2);
-      create_missile(player);
-      setTimeout(create_gift,5000);
-    }
-    
-    this.update = function() {
-      if (!paused) {
-	player.setImage(player.anim_default.next());
-	if(direction === 0) {
-	  if (player.y+player.speed<jaws.height-player.height) {
-	    player.y += player.speed;
-	  }
+      player.shield_sprite.y = player.y;
+      if(player.can_fire) {
+	player.can_fire=0;
+	setTimeout(function() {player.can_fire=1}, 100);
+	create_bullet(player);
+      }
+      var list = jaws.collideOneWithMany(player, missiles);
+      for (var i=0; i<list.length; i++) {
+	missiles.remove(list[i]);
+	if (player.shield == 0) {
+	  this.hit();
+	  player.anim_default = ship_exp;
+	  setTimeout(function() {player.anim_default=anim.slice(0, 4)}, 500);
 	}
-	if(direction === 1) {
-	  if (player.y-player.speed>0) {
-	    player.y -= player.speed;
-	  }
-	}
-	player.shield_sprite.y = player.y;
-	if(player.can_fire) {
-	  player.can_fire=0;
-	  setTimeout(function() {player.can_fire=1}, 100);
-	  create_bullet(player);
-	}
-	var list = jaws.collideOneWithMany(player, missiles);
-	for (var i=0; i<list.length; i++) {
-	  missiles.remove(list[i]);
+      }
+      list = jaws.collideOneWithMany(player, gifts);
+      for (var i=0;i<list.length;i++) {
+	list[i].taken(player);
+	gifts.remove(list[i]);
+      }
+      var del = function(item) {
+	enemies.remove(item);
+      }
+      list = jaws.collideOneWithMany(player, enemies);
+      for (var i=0;i<list.length;i++) {
+	if (list[i].health > 0) {
+	  list[i].health = 0;
+	  list[i].xspeed = 0;
+	  player.points += 1;
+	  setTimeout(del, 600, list[i]);
 	  if (player.shield == 0) {
 	    this.hit();
 	    player.anim_default = ship_exp;
-	    setTimeout(function() {player.anim_default=anim.slice(0, 4)}, 500);
+	    setTimeout(function() {player.anim_default=anim.slice(0,4)}, 500);
 	  }
 	}
-	list = jaws.collideOneWithMany(player, gifts);
-	for (var i=0;i<list.length;i++) {
-	  list[i].taken(player);
-	  gifts.remove(list[i]);
+      }
+      gifts.deleteIf(jaws.isOutsideCanvas);
+      gifts.update();
+      enemies.deleteIf(function(item) {
+	if (jaws.isOutsideCanvas(item)) {
+	  player.aliens+=1;
+	  if (player.aliens>9) {
+	    last_points = player.points;
+	    jaws.switchGameState(GameOverState);
+	  }
+	  return true;
 	}
-	var del = function(item) {
-	  enemies.remove(item);
+	else {return false}
+      });
+      missiles.update();
+      bullets.deleteIf(jaws.isOutsideCanvas);
+      bullets.update();
+      enemies.forEach(function (element, index, array) {
+	if (element.health<1) {
+	  element.setImage(element.exp_anim.next());
+	  element.health-=1;
 	}
-	list = jaws.collideOneWithMany(player, enemies);
-	for (var i=0;i<list.length;i++) {
-	  if (list[i].health > 0) {
-	    list[i].health = 0;
-	    list[i].xspeed = 0;
-	    player.points += 1;
-	    setTimeout(del, 600, list[i]);
-	    if (player.shield == 0) {
-	      this.hit();
-	      player.anim_default = ship_exp;
-	      setTimeout(function() {player.anim_default=anim.slice(0,4)}, 500);
-	    }
-	  }
-	}
-	gifts.deleteIf(jaws.isOutsideCanvas);
-	gifts.update();
-	enemies.deleteIf(function(item) {
-	  if (jaws.isOutsideCanvas(item)) {
-	    player.aliens+=1;
-	    if (player.aliens>9) {
-	      last_points = player.points;
-	      jaws.switchGameState(GameOverState);
-	    }
-	    return true;
-	  }
-	  else {return false}
-	});
-	missiles.update();
-	bullets.deleteIf(jaws.isOutsideCanvas);
-	bullets.update();
-	enemies.forEach(function (element, index, array) {
-	  if (element.health<1) {
-	    element.setImage(element.exp_anim.next());
-	    element.health-=1;
-	  }
-	});
-	missiles.deleteIf(jaws.isOutsideCanvas);
-	enemies.update();
-	var col=jaws.collideManyWithMany(bullets, enemies);
-	for (var i=0; i<col.length; i++) {
-	  if (col[i][1].health>0) {
-	    bullets.remove(col[i][0]);
-	  }
-	  col[i][1].health -= 1;
-	  if (col[i][1].health==0) {
-	    player.points+=1;
-	    setTimeout(del, 600, col[i][1]);
-	  }
-	  if (col[i][1].health<1) {
-	    col[i][1].xspeed = 0;
-	  }
-	}
-	/* This is to destroy gifts when hit by bullets
-	var col=jaws.collideManyWithMany(bullets,gifts);
-	for (var i=0; i<col.length; i++)
-	{
+      });
+      missiles.deleteIf(jaws.isOutsideCanvas);
+      enemies.update();
+      var col=jaws.collideManyWithMany(bullets, enemies);
+      for (var i=0; i<col.length; i++) {
+	if (col[i][1].health>0) {
 	  bullets.remove(col[i][0]);
-	  gifts.remove(col[i][1]);
 	}
-	*/
+	col[i][1].health -= 1;
+	if (col[i][1].health==0) {
+	  player.points+=1;
+	  setTimeout(del, 600, col[i][1]);
+	}
+	if (col[i][1].health<1) {
+	  col[i][1].xspeed = 0;
+	}
       }
+      /* This is to destroy gifts when hit by bullets
+       * var col=jaws.collideManyWithMany(bullets,gifts);
+       * for (var i=0; i<col.length; i++)
+       * {
+       *  bullets.remove(col[i][0]);
+       *  gifts.remove(col[i][1]);
     }
-    
-    this.draw = function() {
-      var grd = jaws.context.createLinearGradient(0, 0, jaws.width, 0);
-      grd.addColorStop(0,"#caeaff");
-      grd.addColorStop(1,"#67dbf1");
-      jaws.context.fillStyle=grd;
-      jaws.context.fillRect(0, 0, jaws.width, jaws.height);
-      if (player.shield==1) {player.shield_sprite.draw()}
-      player.draw();
-      missiles.draw();
-      bullets.draw()
-      enemies.draw()
-      gifts.draw();
-      jaws.context.font = "10pt terminal";
+    */
+    }
+  }
+  
+  this.draw = function() {
+    var grd = jaws.context.createLinearGradient(0, 0, jaws.width, 0);
+    grd.addColorStop(0,"#caeaff");
+    grd.addColorStop(1,"#67dbf1");
+    jaws.context.fillStyle=grd;
+    jaws.context.fillRect(0, 0, jaws.width, jaws.height);
+    if (player.shield==1) {player.shield_sprite.draw()}
+    player.draw();
+    missiles.draw();
+    bullets.draw()
+    enemies.draw()
+    gifts.draw();
+    jaws.context.font = "10pt terminal";
+    jaws.context.lineWidth = 10;
+    jaws.context.fillStyle =  "Black";
+    var w = jaws.context.measureText("Points: "+player.points);
+    health_sprite.x = w.width+10;
+    health_sprite.setImage(health_sprite_sheet.frames[player.health-1]);
+    jaws.context.fillText("Points: "+player.points, 0, 15);
+    health_sprite.draw();
+    for (var i=0; i<player.lifes; i++) {
+      life_sprite.x = w.width+100+15*i;
+      life_sprite.draw();
+    }
+    jaws.context.fillText("Aliens to invasion: "+(10-player.aliens),
+			  100+15*player.lifes+w.width, 15);
+    if (paused) {
+      jaws.context.font = "bold 20pt terminal";
       jaws.context.lineWidth = 10;
-      jaws.context.fillStyle =  "Black";
-      var w = jaws.context.measureText("Points: "+player.points);
-      health_sprite.x = w.width+10;
-      health_sprite.setImage(health_sprite_sheet.frames[player.health-1]);
-      jaws.context.fillText("Points: "+player.points, 0, 15);
-      health_sprite.draw();
-      for (var i=0; i<player.lifes; i++) {
-	life_sprite.x = w.width+100+15*i;
-	life_sprite.draw();
-      }
-      jaws.context.fillText("Aliens to invasion: "+(10-player.aliens),
-			    100+15*player.lifes+w.width, 15);
-      if (paused) {
-	jaws.context.font = "bold 20pt terminal";
-	jaws.context.lineWidth = 10;
-	jaws.context.fillStyle = "Black";
-	jaws.context.strokeStyle =  "rgba(200,200,200,0.0)";
-	jaws.context.fillText("Paused", jaws.width/2, jaws.height/2);
-      }
+      jaws.context.fillStyle = "Black";
+      jaws.context.strokeStyle =  "rgba(200,200,200,0.0)";
+      jaws.context.fillText("Paused", jaws.width/2, jaws.height/2);
     }
+  }
 }
 
 function MenuState() {
