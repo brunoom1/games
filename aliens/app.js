@@ -85,7 +85,7 @@ function myGameState() {
   }
   
   function new_static(image, x, y, xspeed, yspeed) {
-    obj = new jaws.Sprite({image: image, x: x, y: y, anchor: "top_left"});
+    var obj = new jaws.Sprite({image: image, x: x, y: y, anchor: "top_left"});
     obj.xspeed = xspeed;
     obj.yspeed = yspeed;
     obj.update = function() {this.x+=this.xspeed;this.y+=this.yspeed;};
