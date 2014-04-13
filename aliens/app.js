@@ -22,7 +22,25 @@
  *    for the JavaScript code in this page.
  */
 
-var last_points = 0
+function gameOver(points) {
+  jaws.switchGameState(fakeState);
+  
+  if (localStorage.getItem("record") == null) {localStorage['record']=0}
+  
+  document.getElementById('scored').innerHTML = "You scored "+points+" points!";
+  if (parseInt(localStorage.getItem("record")) < points) {
+    document.getElementById('record').innerHTML = "New record!";
+		localStorage['record']=points;
+  }
+  else {
+    document.getElementById('record').innerHTML = "Record: "+localStorage.getItem("record");
+  }
+
+  document.querySelector('#game').className = 'right';
+  document.querySelector('[data-position="current"]').className = 'current';
+}
+  
+var last_points = 0;
 function myGameState() {
   
   var direction = null;
@@ -176,25 +194,41 @@ function myGameState() {
 	player.init();
       }
       else {
-	last_points = player.points;
-	jaws.switchGameState(GameOverState);
+	gameOver(player.points);
       }
     }
   }
   
   this.setup = function() {
-    var onTouch = function(event) {
-      direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
-      event.preventDefault();
-    }
-    jaws.canvas.addEventListener("touchstart", onTouch, false);
-    jaws.canvas.addEventListener("touchmove", onTouch, false);
-    jaws.canvas.addEventListener("touchend",
-				 function(event) {
-				   direction = null;
-				   event.preventDefault();
-				 },
-				 false);
+		if (navigator.userAgent.contains('Mobile')) {
+			var onTouch = function(event) {
+				direction = (event.touches[0].pageY<jaws.height/2) ? 1 : 0;
+				event.preventDefault();
+			}
+			jaws.canvas.addEventListener("touchstart", onTouch, false);
+			jaws.canvas.addEventListener("touchmove", onTouch, false);
+			jaws.canvas.addEventListener("touchend",
+																	 function(event) {
+																		 direction = null;
+																		 event.preventDefault();
+																	 },
+																false);
+		}
+		else {
+			window.addEventListener("keydown",
+			function(e){
+			  switch(e.keyCode){
+			    case 38: direction = 1; break; //up
+					case 40: direction = 0; break; //down							
+			    //case 32:  break; //spacebar
+					//case 80:  break; //p
+			    default: break;
+			  }
+			},
+			false);
+			window.addEventListener("keyup", function(e){direction = null;}, false);
+		}
+		
     player = new_ship();
     setTimeout(create_enemy, 100, 0);
     setTimeout(create_enemy, 50000, 1);
@@ -259,8 +293,7 @@ function myGameState() {
 	if (jaws.isOutsideCanvas(item)) {
 	  player.aliens+=1;
 	  if (player.aliens>9) {
-	    last_points = player.points;
-	    jaws.switchGameState(GameOverState);
+	    gameOver(player.points);
 	  }
 	  return true;
 	}
@@ -338,97 +371,73 @@ function myGameState() {
   }
 }
 
-function MenuState() {
-  var x = 50;
-  var delta = 1;
+function fakeState() {
   
   this.setup = function() {
-    var onTouchStart = function() {
-      jaws.canvas.removeEventListener("touchstart", onTouchStart);
-      jaws.switchGameState(myGameState);
-    }
-    jaws.canvas.addEventListener("touchstart", onTouchStart, false);
   }
   
   this.update = function() {
-    if (x+delta>100) {delta=-1}
-    if (x+delta<0) {delta=1}
-    x += delta;
   }
   
   this.draw = function() {
-    var grd=jaws.context.createLinearGradient(0, 0, jaws.width, 0);
-    grd.addColorStop(0, "#caeaff");
-    grd.addColorStop(1, "#67dbf1");
-    jaws.context.fillStyle = grd;
-    jaws.context.fillRect(0, 0, jaws.width, jaws.height);
-    jaws.context.font = "bold 20pt terminal";
-    jaws.context.lineWidth = 10;
-    if (localStorage.getItem("record")!=null) {
-      jaws.context.fillStyle = "Black";
-      jaws.context.fillText("Record: "+localStorage.getItem("record"),
-			    30, jaws.height/2-30);
-    }
-    jaws.context.fillStyle =  "rgb("+x+","+x+","+x+")";
-    jaws.context.fillText("Tap to start", 30, jaws.height/2);
-  }
-}
-
-function GameOverState() {
-  var new_record = false;
-  var x = 50;
-  var delta = 1;
-
-  this.setup = function() {
-    if (localStorage.getItem("record")==null) {localStorage['record']=0}
-    if (parseInt(localStorage.getItem("record"))<last_points) {
-      new_record = true;
-    }
-    else {new_record = false}
-    var onTouchStart = function() {
-      jaws.canvas.removeEventListener("touchstart", onTouchStart);
-      jaws.switchGameState(myGameState);
-    }
-    jaws.canvas.addEventListener("touchstart", onTouchStart, false);
-  }
-  
-  this.update = function() {
-    if(x+delta>100) {delta=-1}
-    if(x+delta<0) {delta=1}
-    x += delta;
-  }
-  
-  this.draw = function() {
-    var grd = jaws.context.createLinearGradient(0, 0, jaws.width, 0);
-    grd.addColorStop(0, "#caeaff");
-    grd.addColorStop(1, "#67dbf1");
-    jaws.context.fillStyle = grd;
-    jaws.context.fillRect(0, 0, jaws.width, jaws.height);
-    jaws.context.font = "bold 20pt terminal";
-    jaws.context.lineWidth = 10;
-    jaws.context.fillStyle = "Black";
-    jaws.context.fillText("Game Over!", 30, jaws.height/2-90);
-    jaws.context.fillText("You scored "+last_points+" points", 30, 
-			  jaws.height/2-60);
-    if (new_record) {
-      localStorage['record'] = last_points;
-      jaws.context.fillText("New Record!", 30, jaws.height/2-30);
-    }
-    else {
-      jaws.context.fillText("Record: "+localStorage.getItem("record"), 30, 
-			    jaws.height/2-30);
-    }
-    jaws.context.fillStyle = "rgb("+x+","+x+","+x+")";
-    jaws.context.fillText("Tap to restart", 30, jaws.height/2);
   }
 }
 
 jaws.onload = function() {
-  var canvas = document.createElement('canvas');
-  canvas.width = Math.max(screen.width, screen.height);
-  canvas.height = Math.min(screen.width, screen.height);
-  canvas.style = "margin: 0px 0px; padding: 0px 0px;";
-  document.body.appendChild(canvas);
+	var canvas = document.getElementById('gameCanvas');
+	
+	if (navigator.userAgent.contains('Mobile')) {
+		canvas.width = Math.max(screen.width, screen.height);
+		canvas.height = Math.min(screen.width, screen.height);
+	}
+	else {
+		canvas.width = 800;
+		canvas.height = 600;
+		
+		canvas.parentNode.style.textAlign = "center";
+		
+		window.addEventListener("keydown",
+			function(e){
+			  switch(e.keyCode){
+			    case 37: case 39: case 38:  case 40:
+			    case 32: e.preventDefault(); break;
+			    default: break;
+			  }
+			},
+			false);
+	}
+  
+  
+  
+	//game
+	document.querySelector('#btn-new-game').addEventListener ('click', function () {
+		document.querySelector('#game').className = 'current';
+		document.querySelector('[data-position="current"]').className = 'left';
+		jaws.switchGameState(myGameState);
+	});
+	
+	//help
+	document.querySelector('#btn-help').addEventListener ('click', function () {
+		document.querySelector('#help').className = 'current';
+		document.querySelector('[data-position="current"]').className = 'left';
+	});
+	document.querySelector('#btn-help-back').addEventListener ('click', function () {
+		document.querySelector('#help').className = 'right';
+		document.querySelector('[data-position="current"]').className = 'current';
+	});
+	
+	//about
+	document.querySelector('#btn-about').addEventListener ('click', function () {
+		document.querySelector('#about').className = 'current';
+		document.querySelector('[data-position="current"]').className = 'left';
+	});
+	document.querySelector('#btn-about-back').addEventListener ('click', function () {
+		document.querySelector('#about').className = 'right';
+		document.querySelector('[data-position="current"]').className = 'current';
+	});
+  
+  document.getElementById('record').innerHTML = "Record: "+localStorage.getItem("record");
+  
   jaws.assets.setRoot("data/");
   jaws.assets.add(
     ["lifes.png",
@@ -446,5 +455,5 @@ jaws.onload = function() {
     'enemy1.png',
     'enemy2.png',
     'exp.png']);
-  jaws.start(MenuState);
+  jaws.start(fakeState, {fps: 1});
 }

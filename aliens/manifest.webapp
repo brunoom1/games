@@ -1,7 +1,7 @@
 {
   "name": "Aliens invade",
   "description": "Not allow aliens to invade your planet!",
-  "launch_path": "/games/aliens",
+  "launch_path": "/games/aliens/index.html",
   "icons": {
     "30": "/games/aliens/data/icon-30.png",
     "60": "/games/aliens/data/icon-60.png",
