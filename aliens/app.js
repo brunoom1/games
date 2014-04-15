@@ -23,7 +23,7 @@
  */
 
 function gameOver(points) {
-  jaws.switchGameState(fakeState);
+  jaws.game_loop.pause();
   
   if (localStorage.getItem("record") == null) {localStorage['record']=0}
   
@@ -41,7 +41,7 @@ function gameOver(points) {
 }
   
 var last_points = 0;
-function myGameState() {
+function gameState() {
   
   var direction = null;
   var bullets = new jaws.SpriteList();
@@ -371,18 +371,6 @@ function myGameState() {
   }
 }
 
-function fakeState() {
-  
-  this.setup = function() {
-  }
-  
-  this.update = function() {
-  }
-  
-  this.draw = function() {
-  }
-}
-
 jaws.onload = function() {
 	var canvas = document.getElementById('gameCanvas');
 	
@@ -413,7 +401,7 @@ jaws.onload = function() {
 	document.querySelector('#btn-new-game').addEventListener ('click', function () {
 		document.querySelector('#game').className = 'current';
 		document.querySelector('[data-position="current"]').className = 'left';
-		jaws.switchGameState(myGameState);
+		jaws.switchGameState(gameState);
 	});
 	
 	//help
@@ -455,5 +443,6 @@ jaws.onload = function() {
     'enemy1.png',
     'enemy2.png',
     'exp.png']);
-  jaws.start(fakeState, {fps: 1});
+  jaws.start(gameState);
+  jaws.game_loop.pause();
 }
